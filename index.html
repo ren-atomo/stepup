@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step up Team Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #141416;
+      --bg-tertiary: #1c1c1f;
+      --bg-card: #1a1a1d;
+      --text-primary: #f5f5f7;
+      --text-secondary: #a1a1a6;
+      --text-tertiary: #6e6e73;
+      --accent: #00d4aa;
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --border: #2c2c2e;
+      --win: #34c759;
+      --lose: #ff453a;
+      --draw: #ff9f0a;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --transition: all 0.2s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .main {
+      flex: 1;
+      margin-left: 240px;
+      min-height: 100vh;
+    }
+
+    .content {
+      padding: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .logo h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .nav-section {
+      padding: 8px 12px;
+    }
+
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 12px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .nav-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+      opacity: 0.7;
+    }
+
+    .nav-item.active svg {
+      opacity: 1;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .stat-value.accent {
+      color: var(--accent);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    tr:hover td {
+      background: var(--bg-tertiary);
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .result-badge.win {
+      background: rgba(52, 199, 89, 0.15);
+      color: var(--win);
+    }
+
+    .result-badge.lose {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--lose);
+    }
+
+    .result-badge.draw {
+      background: rgba(255, 159, 10, 0.15);
+      color: var(--draw);
+    }
+
+    .build-params {
+      display: flex;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .build-param {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 6px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+
+    .build-param-label {
+      color: var(--text-tertiary);
+      font-size: 9px;
+    }
+
+    .build-param-value {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .player-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .player-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .player-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .player-nickname {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .player-position {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .player-positions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .player-builds {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .player-builds-title {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .build-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .build-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 4px;
+      transition: var(--transition);
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .tab {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .threat-badge {
+      color: var(--draw);
+      font-size: 14px;
+      letter-spacing: -2px;
+    }
+
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      z-index: 99;
+    }
+
+    .mobile-header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mobile-menu-btn {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .main {
+        margin-left: 0;
+        padding-top: 60px;
+      }
+
+      .mobile-header {
+        display: block;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .player-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-tertiary);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-tertiary);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      box-shadow: var(--shadow);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1001;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: var(--win); }
+    .toast.error { border-color: var(--lose); }
+
+    .post-item {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .post-item:last-child {
+      border-bottom: none;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .post-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .post-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .post-category {
+      font-size: 10px;
+      padding: 3px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .post-content {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    .priority-important {
+      color: var(--lose);
+    }
+
+    .chart-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .chart-label {
+      width: 120px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .chart-track {
+      flex: 1;
+      height: 24px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .chart-win {
+      background: var(--win);
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+
+    .chart-lose {
+      background: var(--lose);
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+
+    .chart-value {
+      width: 60px;
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-left: 12px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="mobile-header">
+      <div class="mobile-header-content">
+        <h1 style="font-size: 16px; font-weight: 600;">Step <span style="color: var(--accent);">up</span></h1>
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <h1>Step <span>up</span></h1>
+      </div>
+      
+      <nav class="nav-section">
+        <div class="nav-section-title">メイン</div>
+        <a class="nav-item active" onclick="showPage('dashboard')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          ダッシュボード
+        </a>
+        <a class="nav-item" onclick="showPage('players')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          選手一覧
+        </a>
+        <a class="nav-item" onclick="showPage('matches')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          試合記録
+        </a>
+        <a class="nav-item" onclick="showPage('analysis')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          分析
+        </a>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-section-title">データベース</div>
+        <a class="nav-item" onclick="showPage('opponents')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+          対戦相手DB
+        </a>
+        <a class="nav-item" onclick="showPage('tournaments')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          大会管理
+        </a>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-section-title">チーム</div>
+        <a class="nav-item" onclick="showPage('practice')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          練習記録
+        </a>
+        <a class="nav-item" onclick="showPage('board')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          掲示板
+        </a>
+      </nav>
+
+      <nav class="nav-section" style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border);">
+        <a class="nav-item" href="tournament.html" style="background: rgba(255, 159, 10, 0.1); border: 1px solid rgba(255, 159, 10, 0.3);">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #ff9f0a;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span style="color: #ff9f0a;">大会モード</span>
+        </a>
+        <a class="nav-item" href="admin.html">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          管理者ページ
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="content">
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+          <div class="page-header">
+            <h2 class="page-title">ダッシュボード</h2>
+            <p class="page-subtitle">Step up チームの概要</p>
+          </div>
+
+          <div class="stats-grid" id="dashboard-stats">
+            <div class="stat-card">
+              <div class="stat-label">現役選手</div>
+              <div class="stat-value" id="stat-players">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">総試合数</div>
+              <div class="stat-value" id="stat-matches">-</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">勝率</div>
+              <div class="stat-value accent" id="stat-winrate">-</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">直近の試合</h3>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>大会</th>
+                    <th>対戦相手</th>
+                    <th>スコア</th>
+                    <th>結果</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-matches">
+                  <tr>
+                    <td colspan="5" class="loading">
+                      <div class="spinner"></div>
+                      読み込み中...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">今後の大会</h3>
+              </div>
+              <div id="upcoming-tournaments">
+                <div class="empty-state">
+                  <p>予定されている大会はありません</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">重要なお知らせ</h3>
+              </div>
+              <div id="important-posts">
+                <div class="empty-state">
+                  <p>お知らせはありません</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Players Page -->
+        <div id="page-players" class="page">
+          <div class="page-header">
+            <h2 class="page-title">選手一覧</h2>
+            <p class="page-subtitle">Step up メンバーとビルド情報</p>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="switchPlayerTab('active')">現役</button>
+            <button class="tab" onclick="switchPlayerTab('inactive')">休止・退団</button>
+          </div>
+
+          <div id="players-active" class="tab-content active">
+            <div class="player-grid" id="player-list">
+              <div class="loading">
+                <div class="spinner"></div>
+                読み込み中...
+              </div>
+            </div>
+          </div>
+
+          <div id="players-inactive" class="tab-content">
+            <div class="player-grid" id="player-list-inactive"></div>
+          </div>
+        </div>
+
+        <!-- Matches Page -->
+        <div id="page-matches" class="page">
+          <div class="page-header">
+            <h2 class="page-title">試合記録</h2>
+            <p class="page-subtitle">全試合の結果と詳細</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">試合一覧</h3>
+              <div>
+                <select class="form-select" style="width: auto; display: inline-block;" id="match-filter-team">
+                  <option value="">全てのチーム</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>大会</th>
+                    <th>対戦相手</th>
+                    <th>スコア</th>
+                    <th>結果</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="match-list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analysis Page -->
+        <div id="page-analysis" class="page">
+          <div class="page-header">
+            <h2 class="page-title">分析</h2>
+            <p class="page-subtitle">チームと個人のパフォーマンス分析</p>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="switchAnalysisTab('team')">対チーム別</button>
+            <button class="tab" onclick="switchAnalysisTab('player')">個人成績</button>
+          </div>
+
+          <div id="analysis-team" class="tab-content active">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">対チーム別勝率</h3>
+              </div>
+              <div id="team-winrate-chart"></div>
+            </div>
+          </div>
+
+          <div id="analysis-player" class="tab-content">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">個人スタッツ</h3>
+              </div>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>選手</th>
+                      <th>試合数</th>
+                      <th>総得点</th>
+                      <th>総被弾</th>
+                      <th>平均得点</th>
+                      <th>K/D</th>
+                    </tr>
+                  </thead>
+                  <tbody id="player-stats-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opponents Page -->
+        <div id="page-opponents" class="page">
+          <div class="page-header">
+            <h2 class="page-title">対戦相手データベース</h2>
+            <p class="page-subtitle">他チームと選手の情報</p>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" onclick="switchOpponentTab('teams')">チーム一覧</button>
+            <button class="tab" onclick="switchOpponentTab('players')">選手検索</button>
+          </div>
+
+          <div id="opponents-teams" class="tab-content active">
+            <div class="player-grid" id="opponent-team-list"></div>
+          </div>
+
+          <div id="opponents-players" class="tab-content">
+            <div class="form-group" style="max-width: 300px;">
+              <input type="text" class="form-input" placeholder="選手名で検索..." id="opponent-player-search" oninput="searchOpponentPlayers()">
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>選手名</th>
+                    <th>所属チーム</th>
+                    <th>ポジション</th>
+                    <th>要注意度</th>
+                  </tr>
+                </thead>
+                <tbody id="opponent-player-list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tournaments Page -->
+        <div id="page-tournaments" class="page">
+          <div class="page-header">
+            <h2 class="page-title">大会管理</h2>
+            <p class="page-subtitle">大会スケジュールとエントリー状況</p>
+          </div>
+
+          <div class="card">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>大会名</th>
+                    <th>日付</th>
+                    <th>グレード</th>
+                    <th>エントリー状況</th>
+                    <th>出場メンバー</th>
+                  </tr>
+                </thead>
+                <tbody id="tournament-list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Page -->
+        <div id="page-practice" class="page">
+          <div class="page-header">
+            <h2 class="page-title">練習記録</h2>
+            <p class="page-subtitle">練習内容と振り返り</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">練習履歴</h3>
+              <button class="btn btn-primary btn-sm" onclick="openAddPracticeModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                記録を追加
+              </button>
+            </div>
+            <div id="practice-list"></div>
+          </div>
+        </div>
+
+        <!-- Board Page -->
+        <div id="page-board" class="page">
+          <div class="page-header">
+            <h2 class="page-title">掲示板</h2>
+            <p class="page-subtitle">チーム内の連絡・情報共有</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">投稿一覧</h3>
+              <button class="btn btn-primary btn-sm" onclick="openAddPostModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                投稿する
+              </button>
+            </div>
+            <div id="board-posts"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Practice Modal -->
+  <div class="modal-overlay" id="practice-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">練習記録を追加</h3>
+        <button class="modal-close" onclick="closeModal('practice-modal')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form id="practice-form" onsubmit="submitPractice(event)">
+        <div class="form-group">
+          <label class="form-label">日付</label>
+          <input type="date" class="form-input" name="date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">参加者</label>
+          <input type="text" class="form-input" name="participants" placeholder="カンマ区切りで入力">
+        </div>
+        <div class="form-group">
+          <label class="form-label">練習メニュー</label>
+          <textarea class="form-textarea" name="menu" placeholder="練習内容を記入"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">振り返り・反省点</label>
+          <textarea class="form-textarea" name="reflection" placeholder="気づいた点や改善点を記入"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">次回への課題</label>
+          <textarea class="form-textarea" name="nextTasks" placeholder="次回取り組むことを記入"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">保存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Post Modal -->
+  <div class="modal-overlay" id="post-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">新しい投稿</h3>
+        <button class="modal-close" onclick="closeModal('post-modal')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form id="post-form" onsubmit="submitPost(event)">
+        <div class="form-group">
+          <label class="form-label">投稿者名</label>
+          <input type="text" class="form-input" name="author" placeholder="名前を入力">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">カテゴリ</label>
+            <select class="form-select" name="category">
+              <option value="お知らせ">お知らせ</option>
+              <option value="相談">相談</option>
+              <option value="アイデア">アイデア</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">重要度</label>
+            <select class="form-select" name="priority">
+              <option value="通常">通常</option>
+              <option value="重要">重要</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">タイトル</label>
+          <input type="text" class="form-input" name="title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">内容</label>
+          <textarea class="form-textarea" name="content" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">投稿</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Player Detail Modal -->
+  <div class="modal-overlay" id="player-detail-modal">
+    <div class="modal" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="player-detail-name">選手詳細</h3>
+        <button class="modal-close" onclick="closeModal('player-detail-modal')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div id="player-detail-content"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===== Configuration =====
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyJ25BrsrLxY01cXqriuyeO8YgqpumOq9_sTuw88Knr9CcIdzfzSIi-NMIMAhdtue3R/exec';
+    
+    // ===== State =====
+    let state = {
+      players: [],
+      builds: [],
+      otherTeams: [],
+      otherPlayers: [],
+      otherBuilds: [],
+      matches: [],
+      tournaments: [],
+      practices: [],
+      posts: [],
+      analytics: null
+    };
+
+    // ===== JSONP API Function =====
+    let callbackCounter = 0;
+    
+    function api(action, data = {}) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonpCallback_' + (++callbackCounter) + '_' + Date.now();
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(response) {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          resolve(response);
+        };
+        
+        const params = new URLSearchParams({
+          callback: callbackName,
+          action: action,
+          data: encodeURIComponent(JSON.stringify(data))
+        });
+        
+        script.src = API_URL + '?' + params.toString();
+        script.onerror = () => {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          reject(new Error('Network error'));
+        };
+        
+        document.body.appendChild(script);
+      });
+    }
+
+    // ===== UI Functions =====
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if (event && event.target) {
+        event.target.closest('.nav-item').classList.add('active');
+      }
+      
+      switch(pageId) {
+        case 'dashboard': loadDashboard(); break;
+        case 'players': loadPlayers(); break;
+        case 'matches': loadMatches(); break;
+        case 'analysis': loadAnalytics(); break;
+        case 'opponents': loadOpponents(); break;
+        case 'tournaments': loadTournaments(); break;
+        case 'practice': loadPractices(); break;
+        case 'board': loadBoard(); break;
+      }
+      
+      if (window.innerWidth <= 768) {
+        toggleSidebar();
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('open');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // ===== Dashboard =====
+    async function loadDashboard() {
+      try {
+        const data = await api('getDashboard');
+        if (data.error) {
+          showToast(data.error, 'error');
+          return;
+        }
+        
+        document.getElementById('stat-players').textContent = data.stats.totalPlayers;
+        document.getElementById('stat-matches').textContent = data.stats.totalMatches;
+        document.getElementById('stat-winrate').textContent = data.stats.winRate + '%';
+        
+        const tbody = document.getElementById('recent-matches');
+        if (data.recentMatches.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">試合記録がありません</td></tr>';
+        } else {
+          tbody.innerHTML = data.recentMatches.map(m => `
+            <tr>
+              <td>${formatDate(m.date)}</td>
+              <td>${m.tournamentName || '-'}</td>
+              <td>${m.opponentTeamName || '-'}</td>
+              <td style="font-family: 'JetBrains Mono', monospace;">${m.ourScore} - ${m.opponentScore}</td>
+              <td><span class="result-badge ${m.result === '勝ち' ? 'win' : m.result === '負け' ? 'lose' : 'draw'}">${m.result}</span></td>
+            </tr>
+          `).join('');
+        }
+        
+        const tournamentsDiv = document.getElementById('upcoming-tournaments');
+        if (data.upcomingTournaments.length === 0) {
+          tournamentsDiv.innerHTML = '<div class="empty-state"><p>予定されている大会はありません</p></div>';
+        } else {
+          tournamentsDiv.innerHTML = data.upcomingTournaments.map(t => `
+            <div style="padding: 12px 0; border-bottom: 1px solid var(--border);">
+              <div style="font-weight: 500;">${t.name}</div>
+              <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">${formatDate(t.date)} / ${t.grade}</div>
+            </div>
+          `).join('');
+        }
+        
+        const postsDiv = document.getElementById('important-posts');
+        if (data.importantPosts.length === 0) {
+          postsDiv.innerHTML = '<div class="empty-state"><p>お知らせはありません</p></div>';
+        } else {
+          postsDiv.innerHTML = data.importantPosts.map(p => `
+            <div class="post-item">
+              <div class="post-title priority-important">⚠ ${p.title}</div>
+              <div class="post-content">${p.content.substring(0, 100)}${p.content.length > 100 ? '...' : ''}</div>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    // ===== Players =====
+    async function loadPlayers() {
+      try {
+        state.players = await api('getTeamPlayers');
+        state.builds = await api('getTeamBuilds');
+        renderPlayers();
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderPlayers() {
+      const activePlayers = state.players.filter(p => !p.status || p.status === '現役');
+      const inactivePlayers = state.players.filter(p => p.status && p.status !== '現役');
+      
+      const activeGrid = document.getElementById('player-list');
+      const inactiveGrid = document.getElementById('player-list-inactive');
+      
+      if (activePlayers.length === 0) {
+        activeGrid.innerHTML = '<div class="empty-state"><p>登録されている選手がいません</p></div>';
+      } else {
+        activeGrid.innerHTML = activePlayers.map(p => renderPlayerCard(p)).join('');
+      }
+      
+      if (inactivePlayers.length === 0) {
+        inactiveGrid.innerHTML = '<div class="empty-state"><p>休止・退団した選手はいません</p></div>';
+      } else {
+        inactiveGrid.innerHTML = inactivePlayers.map(p => renderPlayerCard(p)).join('');
+      }
+    }
+
+    function renderPlayerCard(player) {
+      const playerBuilds = state.builds.filter(b => b.playerId === player.id);
+      const displayName = player.nickname || player.name || '名前未設定';
+      const positions = (player.position || '未設定').split('/');
+      
+      return `
+        <div class="player-card" onclick="showPlayerDetail('${player.id}')">
+          <div class="player-header">
+            <div>
+              <div class="player-name">${displayName}</div>
+              ${player.furigana ? `<div class="player-nickname">${player.furigana}</div>` : ''}
+            </div>
+            <div class="player-positions">
+              ${positions.map(p => `<span class="player-position">${p.trim()}</span>`).join('')}
+            </div>
+          </div>
+          ${playerBuilds.length > 0 ? `
+            <div class="player-builds">
+              <div class="player-builds-title">登録ビルド (${playerBuilds.length})</div>
+              ${playerBuilds.slice(0, 3).map(b => `
+                <div class="build-item">
+                  <span class="build-name">${b.buildName}</span>
+                  <div class="build-params">
+                    <div class="build-param"><span class="build-param-label">SPD</span><span class="build-param-value">${b.spd}</span></div>
+                    <div class="build-param"><span class="build-param-label">SIZE</span><span class="build-param-value">${b.size}</span></div>
+                    <div class="build-param"><span class="build-param-label">CHG</span><span class="build-param-value">${b.chg}</span></div>
+                    <div class="build-param"><span class="build-param-label">SLD</span><span class="build-param-value">${b.shield}</span></div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function showPlayerDetail(playerId) {
+      const player = state.players.find(p => p.id === playerId);
+      const playerBuilds = state.builds.filter(b => b.playerId === playerId);
+      const displayName = player.nickname || player.name || '名前未設定';
+      
+      document.getElementById('player-detail-name').textContent = displayName;
+      document.getElementById('player-detail-content').innerHTML = `
+        <div style="margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px;">
+            <div><span style="color: var(--text-tertiary);">プレイヤーネーム:</span> ${displayName}</div>
+            <div><span style="color: var(--text-tertiary);">読み方:</span> ${player.furigana || '-'}</div>
+            <div><span style="color: var(--text-tertiary);">ポジション:</span> ${player.position || '未設定'}</div>
+            <div><span style="color: var(--text-tertiary);">ステータス:</span> ${player.status || '現役'}</div>
+          </div>
+        </div>
+        
+        <h4 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">ビルド一覧</h4>
+        ${playerBuilds.length === 0 ? '<p style="color: var(--text-tertiary);">登録ビルドなし</p>' : `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${playerBuilds.map(b => `
+              <div style="padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 500;">${b.buildName}</span>
+                  <span style="font-size: 11px; color: var(--text-tertiary);">${b.frequency}</span>
+                </div>
+                <div class="build-params">
+                  <div class="build-param"><span class="build-param-label">SPD</span><span class="build-param-value">${b.spd}</span></div>
+                  <div class="build-param"><span class="build-param-label">SIZE</span><span class="build-param-value">${b.size}</span></div>
+                  <div class="build-param"><span class="build-param-label">CHG</span><span class="build-param-value">${b.chg}</span></div>
+                  <div class="build-param"><span class="build-param-label">SLD</span><span class="build-param-value">${b.shield}</span></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      `;
+      
+      openModal('player-detail-modal');
+    }
+
+    function switchPlayerTab(tab) {
+      document.querySelectorAll('#page-players .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.querySelectorAll('#page-players .tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('players-' + tab).classList.add('active');
+    }
+
+    // ===== Matches =====
+    async function loadMatches() {
+      try {
+        state.matches = await api('getMatches');
+        state.otherTeams = await api('getOtherTeams');
+        
+        const filter = document.getElementById('match-filter-team');
+        filter.innerHTML = '<option value="">全てのチーム</option>' + 
+          state.otherTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        
+        filter.onchange = () => {
+          const filtered = filter.value ? 
+            state.matches.filter(m => m.opponentTeamId === filter.value) : 
+            state.matches;
+          renderMatches(filtered);
+        };
+        
+        renderMatches(state.matches);
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderMatches(matches) {
+      const tbody = document.getElementById('match-list');
+      
+      if (matches.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">試合記録がありません</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = matches.map(m => `
+        <tr>
+          <td>${formatDate(m.date)}</td>
+          <td>${m.tournamentName || '-'}</td>
+          <td>${m.opponentTeamName || '-'}</td>
+          <td style="font-family: 'JetBrains Mono', monospace;">${m.ourScore} - ${m.opponentScore}</td>
+          <td><span class="result-badge ${m.result === '勝ち' ? 'win' : m.result === '負け' ? 'lose' : 'draw'}">${m.result}</span></td>
+          <td></td>
+        </tr>
+      `).join('');
+    }
+
+    // ===== Analysis =====
+    async function loadAnalytics() {
+      try {
+        state.analytics = await api('getAnalytics');
+        renderAnalytics();
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderAnalytics() {
+      if (!state.analytics) return;
+      
+      const chartDiv = document.getElementById('team-winrate-chart');
+      const teamStats = state.analytics.teamStats;
+      
+      if (Object.keys(teamStats).length === 0) {
+        chartDiv.innerHTML = '<div class="empty-state"><p>データがありません</p></div>';
+      } else {
+        chartDiv.innerHTML = Object.entries(teamStats).map(([team, stats]) => {
+          const total = stats.wins + stats.losses + stats.draws;
+          const winPct = (stats.wins / total * 100).toFixed(0);
+          const losePct = (stats.losses / total * 100).toFixed(0);
+          
+          return `
+            <div class="chart-bar">
+              <span class="chart-label">${team}</span>
+              <div class="chart-track">
+                <div class="chart-win" style="width: ${winPct}%"></div>
+                <div class="chart-lose" style="width: ${losePct}%"></div>
+              </div>
+              <span class="chart-value">${stats.wins}勝${stats.losses}敗</span>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      const statsTable = document.getElementById('player-stats-table');
+      const playerStats = state.analytics.playerStats;
+      
+      if (Object.keys(playerStats).length === 0) {
+        statsTable.innerHTML = '<tr><td colspan="6" class="empty-state">データがありません</td></tr>';
+      } else {
+        statsTable.innerHTML = Object.values(playerStats)
+          .sort((a, b) => b.totalKills - a.totalKills)
+          .map(p => `
+            <tr>
+              <td style="font-weight: 500;">${p.name}</td>
+              <td>${p.games}</td>
+              <td>${p.totalKills}</td>
+              <td>${p.totalDeaths}</td>
+              <td>${p.avgKills}</td>
+              <td style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">${p.kd}</td>
+            </tr>
+          `).join('');
+      }
+    }
+
+    function switchAnalysisTab(tab) {
+      document.querySelectorAll('#page-analysis .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.querySelectorAll('#page-analysis .tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('analysis-' + tab).classList.add('active');
+    }
+
+    // ===== Opponents =====
+    async function loadOpponents() {
+      try {
+        state.otherTeams = await api('getOtherTeams');
+        state.otherPlayers = await api('getOtherPlayers');
+        
+        renderOpponentTeams();
+        renderOpponentPlayers(state.otherPlayers);
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderOpponentTeams() {
+      const grid = document.getElementById('opponent-team-list');
+      
+      if (state.otherTeams.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p>登録されているチームがありません</p></div>';
+        return;
+      }
+      
+      grid.innerHTML = state.otherTeams.map(t => {
+        const teamPlayers = state.otherPlayers.filter(p => p.teamId === t.id);
+        return `
+          <div class="player-card">
+            <div class="player-header">
+              <div>
+                <div class="player-name">${t.name}</div>
+                <div class="player-nickname">${t.region || ''}</div>
+              </div>
+              <span class="threat-badge">${t.threat}</span>
+            </div>
+            <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+              選手数: ${teamPlayers.length}名
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderOpponentPlayers(players) {
+      const tbody = document.getElementById('opponent-player-list');
+      
+      if (players.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">選手が見つかりません</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = players.map(p => {
+        const team = state.otherTeams.find(t => t.id === p.teamId);
+        return `
+          <tr>
+            <td style="font-weight: 500;">${p.name}</td>
+            <td>${team ? team.name : '-'}</td>
+            <td>${p.position}</td>
+            <td><span class="threat-badge">${p.threat}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function searchOpponentPlayers() {
+      const query = document.getElementById('opponent-player-search').value.toLowerCase();
+      const filtered = state.otherPlayers.filter(p => 
+        p.name.toLowerCase().includes(query)
+      );
+      renderOpponentPlayers(filtered);
+    }
+
+    function switchOpponentTab(tab) {
+      document.querySelectorAll('#page-opponents .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.querySelectorAll('#page-opponents .tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('opponents-' + tab).classList.add('active');
+    }
+
+    // ===== Tournaments =====
+    async function loadTournaments() {
+      try {
+        state.tournaments = await api('getTournaments');
+        renderTournaments();
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderTournaments() {
+      const tbody = document.getElementById('tournament-list');
+      
+      if (state.tournaments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">大会が登録されていません</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = state.tournaments
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .map(t => `
+          <tr>
+            <td style="font-weight: 500;">${t.name}</td>
+            <td>${formatDate(t.date)}</td>
+            <td>${t.grade}</td>
+            <td>
+              <span class="result-badge ${t.entryStatus === 'エントリー済' ? 'win' : t.entryStatus === '不参加' ? 'lose' : ''}">${t.entryStatus}</span>
+            </td>
+            <td style="font-size: 12px; color: var(--text-secondary);">${t.members || '-'}</td>
+          </tr>
+        `).join('');
+    }
+
+    // ===== Practice =====
+    async function loadPractices() {
+      try {
+        state.practices = await api('getPractices');
+        renderPractices();
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderPractices() {
+      const container = document.getElementById('practice-list');
+      
+      if (state.practices.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>練習記録がありません</p></div>';
+        return;
+      }
+      
+      container.innerHTML = state.practices.map(p => `
+        <div class="post-item">
+          <div class="post-header">
+            <div class="post-title">${formatDate(p.date)}</div>
+            <div class="post-meta">${p.participants || '参加者未記録'}</div>
+          </div>
+          ${p.menu ? `<div style="margin-top: 8px; font-size: 13px;"><strong>メニュー:</strong> ${p.menu}</div>` : ''}
+          ${p.reflection ? `<div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary);"><strong>振り返り:</strong> ${p.reflection}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function openAddPracticeModal() {
+      document.getElementById('practice-form').reset();
+      document.querySelector('#practice-form [name="date"]').valueAsDate = new Date();
+      openModal('practice-modal');
+    }
+
+    async function submitPractice(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        date: form.date.value,
+        participants: form.participants.value,
+        menu: form.menu.value,
+        reflection: form.reflection.value,
+        nextTasks: form.nextTasks.value
+      };
+      
+      try {
+        const result = await api('addPractice', { practice: data });
+        if (result.success) {
+          showToast('練習記録を追加しました');
+          closeModal('practice-modal');
+          loadPractices();
+        } else {
+          showToast(result.error || 'エラーが発生しました', 'error');
+        }
+      } catch (error) {
+        showToast('通信エラーが発生しました', 'error');
+      }
+    }
+
+    // ===== Board =====
+    async function loadBoard() {
+      try {
+        state.posts = await api('getBoardPosts');
+        renderBoard();
+      } catch (error) {
+        showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    function renderBoard() {
+      const container = document.getElementById('board-posts');
+      
+      if (state.posts.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>投稿がありません</p></div>';
+        return;
+      }
+      
+      container.innerHTML = state.posts.map(p => `
+        <div class="post-item">
+          <div class="post-header">
+            <div>
+              <span class="post-title ${p.priority === '重要' ? 'priority-important' : ''}">${p.priority === '重要' ? '⚠ ' : ''}${p.title}</span>
+              <span class="post-category">${p.category}</span>
+            </div>
+            <div class="post-meta">${p.author} / ${formatDateTime(p.postedAt)}</div>
+          </div>
+          <div class="post-content">${p.content}</div>
+        </div>
+      `).join('');
+    }
+
+    function openAddPostModal() {
+      document.getElementById('post-form').reset();
+      openModal('post-modal');
+    }
+
+    async function submitPost(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        author: form.author.value,
+        category: form.category.value,
+        priority: form.priority.value,
+        title: form.title.value,
+        content: form.content.value
+      };
+      
+      try {
+        const result = await api('addBoardPost', { post: data });
+        if (result.success) {
+          showToast('投稿しました');
+          closeModal('post-modal');
+          loadBoard();
+        } else {
+          showToast(result.error || 'エラーが発生しました', 'error');
+        }
+      } catch (error) {
+        showToast('通信エラーが発生しました', 'error');
+      }
+    }
+
+    // ===== Utilities =====
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function formatDateTime(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return `${formatDate(dateStr)} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // ===== Initialize =====
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>
