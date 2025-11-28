@@ -493,6 +493,43 @@
       border-color: var(--accent);
     }
 
+    .match-type-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .match-type-option {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .match-type-option:hover {
+      border-color: var(--accent);
+    }
+
+    .match-type-option.selected {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+
+    .match-type-option input {
+      display: none;
+    }
+
+    .match-type-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
     .lineup-section {
       margin: 20px 0;
       border: 1px solid var(--border);
@@ -818,6 +855,21 @@
               <h3 class="card-title">新規試合登録</h3>
             </div>
             <form id="match-form" onsubmit="submitMatch(event)">
+              <!-- 試合タイプ選択 -->
+              <div class="form-group">
+                <label class="form-label">試合タイプ</label>
+                <div class="match-type-selector">
+                  <label class="match-type-option selected" data-type="our">
+                    <input type="radio" name="matchType" value="our" checked onchange="switchMatchType('our')">
+                    <span class="match-type-label">自チームの試合</span>
+                  </label>
+                  <label class="match-type-option" data-type="scouting">
+                    <input type="radio" name="matchType" value="scouting" onchange="switchMatchType('scouting')">
+                    <span class="match-type-label">観戦・スカウティング</span>
+                  </label>
+                </div>
+              </div>
+              
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">日付</label>
@@ -830,22 +882,54 @@
                   </select>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">対戦相手チーム</label>
-                  <select class="form-select" name="opponentTeamId" id="match-opponent-select" onchange="loadOpponentPlayers()">
-                    <option value="">選択してください</option>
-                  </select>
+              
+              <!-- 自チーム試合用 -->
+              <div id="our-match-teams">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">対戦相手チーム</label>
+                    <select class="form-select" name="opponentTeamId" id="match-opponent-select" onchange="loadOpponentPlayers()">
+                      <option value="">選択してください</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">自チームスコア</label>
+                    <input type="number" class="form-input" name="ourScore" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">相手スコア</label>
+                    <input type="number" class="form-input" name="opponentScore" min="0">
+                  </div>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">自チームスコア</label>
-                  <input type="number" class="form-input" name="ourScore" min="0" required>
+              
+              <!-- 観戦試合用（初期非表示） -->
+              <div id="scouting-match-teams" style="display: none;">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">チームA</label>
+                    <select class="form-select" name="teamAId" id="team-a-select" onchange="loadTeamAPlayers()">
+                      <option value="">選択してください</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">チームB</label>
+                    <select class="form-select" name="teamBId" id="team-b-select" onchange="loadTeamBPlayers()">
+                      <option value="">選択してください</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">相手スコア</label>
-                  <input type="number" class="form-input" name="opponentScore" min="0" required>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">チームAスコア</label>
+                    <input type="number" class="form-input" name="teamAScore" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">チームBスコア</label>
+                    <input type="number" class="form-input" name="teamBScore" min="0">
+                  </div>
                 </div>
               </div>
               
@@ -853,9 +937,9 @@
               <details class="lineup-section" open>
                 <summary>出場選手・パラメータ</summary>
                 <div class="lineup-content">
-                  <!-- 自チーム選手 -->
-                  <div class="lineup-team">
-                    <h4 class="lineup-team-title">自チーム</h4>
+                  <!-- 自チーム選手 / チームA -->
+                  <div class="lineup-team" id="lineup-team-a">
+                    <h4 class="lineup-team-title" id="lineup-team-a-title">自チーム</h4>
                     <div class="lineup-players" id="our-lineup">
                       <div class="lineup-player" data-position="1">
                         <div class="lineup-player-header">
@@ -911,9 +995,9 @@
                     </div>
                   </div>
                   
-                  <!-- 相手チーム選手 -->
-                  <div class="lineup-team">
-                    <h4 class="lineup-team-title opponent">相手チーム</h4>
+                  <!-- 相手チーム選手 / チームB -->
+                  <div class="lineup-team" id="lineup-team-b">
+                    <h4 class="lineup-team-title opponent" id="lineup-team-b-title">相手チーム</h4>
                     <div class="lineup-players" id="opp-lineup">
                       <div class="lineup-player" data-position="1">
                         <div class="lineup-player-header">
@@ -989,7 +1073,7 @@
                   <tr>
                     <th>日付</th>
                     <th>大会</th>
-                    <th>対戦相手</th>
+                    <th>対戦カード</th>
                     <th>スコア</th>
                     <th>結果</th>
                   </tr>
@@ -1382,7 +1466,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyJ25BrsrLxY01cXqriuyeO8YgqpumOq9_sTuw88Knr9CcIdzfzSIi-NMIMAhdtue3R/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwfKAw1OOnBGBeok1qE110VjwTg98F9nEnTfChbmy5zYYJlYPiyRxtdLnL0OSimq-aF/exec';
 
     let state = {
       players: [],
@@ -1772,6 +1856,12 @@
         opponentSelect.innerHTML = '<option value="">選択してください</option>' +
           state.otherTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
         
+        // チームA/B選択用（観戦モード）のドロップダウンを初期化
+        const teamOptions = '<option value="">選択してください</option>' +
+          state.otherTeams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        document.getElementById('team-a-select').innerHTML = teamOptions;
+        document.getElementById('team-b-select').innerHTML = teamOptions;
+        
         // 自チーム選手のドロップダウンを初期化
         const activePlayers = state.players.filter(p => !p.status || p.status === '現役');
         const playerOptions = '<option value="">選手を選択</option>' +
@@ -1794,6 +1884,101 @@
         renderMatchTable();
       } catch (error) {
         showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    // 試合タイプ切り替え
+    function switchMatchType(type) {
+      // ラジオボタンのスタイル更新
+      document.querySelectorAll('.match-type-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.type === type);
+      });
+      
+      // フォーム表示切り替え
+      const isOurMatch = (type === 'our');
+      document.getElementById('our-match-teams').style.display = isOurMatch ? 'block' : 'none';
+      document.getElementById('scouting-match-teams').style.display = isOurMatch ? 'none' : 'block';
+      
+      // 出場選手セクションのラベル切り替え
+      document.getElementById('lineup-team-a-title').textContent = isOurMatch ? '自チーム' : 'チームA';
+      document.getElementById('lineup-team-b-title').textContent = isOurMatch ? '相手チーム' : 'チームB';
+      
+      // ラベルの色クラス切り替え
+      const titleA = document.getElementById('lineup-team-a-title');
+      const titleB = document.getElementById('lineup-team-b-title');
+      titleA.classList.toggle('opponent', !isOurMatch);
+      titleB.classList.remove('opponent');
+      if (!isOurMatch) {
+        titleA.style.color = '#4ecdc4';
+        titleB.style.color = '#ff6b6b';
+      } else {
+        titleA.style.color = '';
+        titleB.style.color = '';
+      }
+      
+      // 観戦モードの場合、自チーム選手セレクトをクリア
+      if (!isOurMatch) {
+        document.querySelectorAll('#our-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = '<option value="">選手を選択</option>';
+        });
+      } else {
+        // 自チーム試合に戻った場合、選手を再設定
+        const activePlayers = state.players.filter(p => !p.status || p.status === '現役');
+        const playerOptions = '<option value="">選手を選択</option>' +
+          activePlayers.map(p => `<option value="${p.id}">${p.nickname || p.name}</option>`).join('');
+        document.querySelectorAll('#our-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = playerOptions;
+        });
+      }
+    }
+
+    // チームA選択時に選手を読み込む（観戦モード用）
+    async function loadTeamAPlayers() {
+      const teamId = document.getElementById('team-a-select').value;
+      if (!teamId) {
+        document.querySelectorAll('#our-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = '<option value="">選手を選択</option>';
+        });
+        return;
+      }
+      
+      try {
+        state.teamAPlayers = await api('getOtherPlayers', { teamId: teamId });
+        state.teamABuilds = await api('getOtherBuilds');
+        
+        const playerOptions = '<option value="">選手を選択</option>' +
+          state.teamAPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        
+        document.querySelectorAll('#our-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = playerOptions;
+        });
+      } catch (error) {
+        showToast('チームA選手の読み込みに失敗しました', 'error');
+      }
+    }
+
+    // チームB選択時に選手を読み込む（観戦モード用）
+    async function loadTeamBPlayers() {
+      const teamId = document.getElementById('team-b-select').value;
+      if (!teamId) {
+        document.querySelectorAll('#opp-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = '<option value="">選手を選択</option>';
+        });
+        return;
+      }
+      
+      try {
+        state.teamBPlayers = await api('getOtherPlayers', { teamId: teamId });
+        state.teamBBuilds = await api('getOtherBuilds');
+        
+        const playerOptions = '<option value="">選手を選択</option>' +
+          state.teamBPlayers.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        
+        document.querySelectorAll('#opp-lineup .lineup-player-select').forEach(select => {
+          select.innerHTML = playerOptions;
+        });
+      } catch (error) {
+        showToast('チームB選手の読み込みに失敗しました', 'error');
       }
     }
 
@@ -1884,40 +2069,77 @@
     function renderMatchTable() {
       const tbody = document.getElementById('match-table');
       if (state.matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">試合が登録されていません</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">試合が登録されていません</td></tr>';
         return;
       }
       
-      tbody.innerHTML = state.matches.slice(0, 20).map(m => `
-        <tr>
-          <td>${formatDate(m.date)}</td>
-          <td>${m.tournamentName || '練習試合'}</td>
-          <td>${m.opponentTeamName || '-'}</td>
-          <td style="font-family: 'JetBrains Mono', monospace;">${m.ourScore} - ${m.opponentScore}</td>
-          <td>
-            <span class="status-badge ${m.result === '勝ち' ? 'status-active' : m.result === '負け' ? 'status-left' : 'status-inactive'}">${m.result}</span>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = state.matches.slice(0, 20).map(m => {
+        // 新旧両方のデータ形式に対応
+        const matchType = m.matchType || 'our';
+        const teamAName = m.teamAName || 'Step up';
+        const teamBName = m.teamBName || m.opponentTeamName || '-';
+        const teamAScore = m.teamAScore !== undefined ? m.teamAScore : m.ourScore;
+        const teamBScore = m.teamBScore !== undefined ? m.teamBScore : m.opponentScore;
+        
+        // 表示用のチーム名
+        const displayTeams = matchType === 'our' 
+          ? `vs ${teamBName}`
+          : `${teamAName} vs ${teamBName}`;
+        
+        // 結果のバッジ色
+        let badgeClass = 'status-inactive';
+        if (m.result === '勝ち') badgeClass = 'status-active';
+        else if (m.result === '負け') badgeClass = 'status-left';
+        else if (m.result === 'A勝ち') badgeClass = 'status-inactive';
+        else if (m.result === 'B勝ち') badgeClass = 'status-inactive';
+        
+        return `
+          <tr>
+            <td>${formatDate(m.date)}</td>
+            <td>${m.tournamentName || '練習試合'}</td>
+            <td>${matchType === 'scouting' ? '<span style="color: var(--text-muted); font-size: 11px;">観戦</span> ' : ''}${displayTeams}</td>
+            <td style="font-family: 'JetBrains Mono', monospace;">${teamAScore} - ${teamBScore}</td>
+            <td>
+              <span class="status-badge ${badgeClass}">${m.result}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     async function submitMatch(e) {
       e.preventDefault();
       const form = e.target;
       
+      const matchType = form.matchType.value;
       const tournament = state.tournaments.find(t => t.id === form.tournamentId.value);
-      const opponent = state.otherTeams.find(t => t.id === form.opponentTeamId.value);
       
-      const matchData = {
+      let matchData = {
         date: form.date.value,
         tournamentId: form.tournamentId.value,
         tournamentName: tournament ? tournament.name : '',
-        opponentTeamId: form.opponentTeamId.value,
-        opponentTeamName: opponent ? opponent.name : '',
-        ourScore: Number(form.ourScore.value),
-        opponentScore: Number(form.opponentScore.value),
+        matchType: matchType,
         notes: form.notes.value
       };
+      
+      if (matchType === 'our') {
+        // 自チーム試合
+        const opponent = state.otherTeams.find(t => t.id === form.opponentTeamId.value);
+        matchData.teamBId = form.opponentTeamId.value;
+        matchData.teamBName = opponent ? opponent.name : '';
+        matchData.teamAScore = Number(form.ourScore.value) || 0;
+        matchData.teamBScore = Number(form.opponentScore.value) || 0;
+      } else {
+        // 観戦試合
+        const teamA = state.otherTeams.find(t => t.id === form.teamAId.value);
+        const teamB = state.otherTeams.find(t => t.id === form.teamBId.value);
+        matchData.teamAId = form.teamAId.value;
+        matchData.teamAName = teamA ? teamA.name : '';
+        matchData.teamBId = form.teamBId.value;
+        matchData.teamBName = teamB ? teamB.name : '';
+        matchData.teamAScore = Number(form.teamAScore.value) || 0;
+        matchData.teamBScore = Number(form.teamBScore.value) || 0;
+      }
       
       try {
         // 試合を登録
@@ -1932,13 +2154,18 @@
         // 出場選手データを収集
         const lineups = [];
         
-        // 自チーム選手
+        // チームA選手（自チーム試合の場合は自チーム、観戦試合の場合はチームA）
         for (let i = 1; i <= 3; i++) {
           const playerId = form[`ourPlayer${i}`].value;
           if (playerId) {
-            const player = state.players.find(p => p.id === playerId);
+            let player;
+            if (matchType === 'our') {
+              player = state.players.find(p => p.id === playerId);
+            } else {
+              player = (state.teamAPlayers || []).find(p => p.id === playerId);
+            }
             lineups.push({
-              team: 'self',
+              team: matchType === 'our' ? 'self' : 'teamA',
               position: i,
               playerId: playerId,
               playerName: player ? (player.nickname || player.name) : '',
@@ -1950,16 +2177,21 @@
           }
         }
         
-        // 相手チーム選手
+        // チームB選手（相手チーム）
         for (let i = 1; i <= 3; i++) {
           const playerId = form[`oppPlayer${i}`].value;
           const playerSelect = form[`oppPlayer${i}`];
           const playerName = playerSelect.selectedOptions[0]?.text || '';
           
           if (playerId && playerId !== '__new__') {
-            const player = (state.oppPlayers || []).find(p => p.id === playerId);
+            let player;
+            if (matchType === 'our') {
+              player = (state.oppPlayers || []).find(p => p.id === playerId);
+            } else {
+              player = (state.teamBPlayers || []).find(p => p.id === playerId);
+            }
             lineups.push({
-              team: 'opponent',
+              team: matchType === 'our' ? 'opponent' : 'teamB',
               position: i,
               playerId: playerId,
               playerName: player ? player.name : playerName,
@@ -1978,6 +2210,10 @@
         
         showToast('試合を登録しました');
         form.reset();
+        // ラジオボタンの選択状態をリセット
+        document.querySelector('.match-type-option[data-type="our"]').classList.add('selected');
+        document.querySelector('.match-type-option[data-type="scouting"]').classList.remove('selected');
+        switchMatchType('our');
         loadMatchesPage();
       } catch (error) {
         showToast('通信エラーが発生しました', 'error');
