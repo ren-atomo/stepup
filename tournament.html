@@ -255,6 +255,18 @@
     .match-item:last-child { border-bottom: none; }
     .match-opponent { font-size: 15px; font-weight: 500; }
 
+    .match-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .match-tournament {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
     .match-score {
       font-family: 'JetBrains Mono', monospace;
       font-size: 16px;
@@ -642,6 +654,146 @@
       outline: none;
       border-color: var(--accent);
     }
+
+    .tournament-selector {
+      margin-bottom: 12px;
+    }
+
+    .tournament-btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .tournament-btn:active {
+      background: var(--bg);
+    }
+
+    .tournament-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .tournament-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--accent);
+      color: #000;
+    }
+
+    .tournament-date {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .member-select-section {
+      margin-top: 8px;
+    }
+
+    .member-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .member-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .member-checkbox:has(input:checked) {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+    }
+
+    .member-checkbox input {
+      display: none;
+    }
+
+    .member-checkbox-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .tournament-option {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tournament-option:active {
+      background: var(--bg);
+    }
+
+    .tournament-option.practice {
+      color: var(--text-muted);
+    }
+
+    .tournament-option.today {
+      background: rgba(0, 245, 212, 0.1);
+      border-left: 3px solid var(--accent);
+    }
+
+    .tournament-option-name {
+      font-weight: 500;
+    }
+
+    .tournament-option-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tournament-option-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #000;
+      margin-left: 8px;
+    }
+
+    .tournament-member-count {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-muted);
+      margin-left: 6px;
+    }
+
+    .form-group-mobile {
+      margin-bottom: 16px;
+    }
+
+    .form-group-mobile label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
   </style>
 </head>
 <body>
@@ -667,6 +819,29 @@
 
     <!-- Match Entry Tab -->
     <div id="tab-match" class="tab-content active">
+      <!-- 大会選択 -->
+      <div class="card" id="tournament-select-card">
+        <div class="card-title">出場大会</div>
+        <div class="tournament-selector">
+          <button class="tournament-btn" onclick="openTournamentSelector()">
+            <span id="selected-tournament">練習試合</span>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div id="tournament-info" class="tournament-info" style="display: none;">
+          <div class="tournament-badge" id="tournament-grade-badge"></div>
+          <div class="tournament-date" id="tournament-date-display"></div>
+        </div>
+        
+        <!-- 出場メンバー選択 -->
+        <div id="member-select-section" class="member-select-section" style="display: none;">
+          <div class="card-title" style="margin-top: 12px;">出場予定メンバー</div>
+          <div id="member-checkboxes" class="member-checkboxes"></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">対戦相手</div>
         <div class="opponent-selector">
@@ -904,6 +1079,71 @@
     </div>
   </main>
 
+  <!-- Tournament Selector Modal -->
+  <div class="modal-overlay" id="tournament-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">大会を選択</span>
+        <button class="modal-close" onclick="closeModal('tournament-modal')">閉じる</button>
+      </div>
+      <div class="modal-content">
+        <div class="add-new-item" onclick="openNewTournamentForm()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          新しい大会を追加
+        </div>
+        <div class="tournament-option practice" onclick="selectTournament(null)">
+          <div class="tournament-option-name">練習試合</div>
+          <div class="tournament-option-date">大会なし</div>
+        </div>
+        <div id="tournament-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Tournament Modal -->
+  <div class="modal-overlay" id="new-tournament-modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span class="modal-title">大会を追加</span>
+        <button class="modal-close" onclick="closeModal('new-tournament-modal')">閉じる</button>
+      </div>
+      <div class="modal-content">
+        <div class="form-group-mobile">
+          <label>大会名</label>
+          <input type="text" class="input-field" id="new-tournament-name" placeholder="例: エンジョイカップ">
+        </div>
+        <div class="form-group-mobile">
+          <label>開催日</label>
+          <input type="date" class="input-field" id="new-tournament-date">
+        </div>
+        <div class="form-group-mobile">
+          <label>グレード</label>
+          <select class="input-field" id="new-tournament-grade">
+            <option value="エンジョイ">エンジョイ</option>
+            <option value="UBC">UBC</option>
+            <option value="ミドル">ミドル</option>
+            <option value="グランドスラム予選">グランドスラム予選</option>
+            <option value="グランドスラム">グランドスラム</option>
+            <option value="HADO WORLD">HADO WORLD</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="form-group-mobile">
+          <label>エントリー状況</label>
+          <select class="input-field" id="new-tournament-status">
+            <option value="エントリー済">エントリー済</option>
+            <option value="検討中">検討中</option>
+            <option value="未定">未定</option>
+          </select>
+        </div>
+        <button class="small-btn" onclick="saveNewTournament()" style="width: 100%; margin-top: 16px;">追加</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Team Selector Modal -->
   <div class="modal-overlay" id="team-modal">
     <div class="modal-sheet">
@@ -956,7 +1196,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwfKAw1OOnBGBeok1qE110VjwTg98F9nEnTfChbmy5zYYJlYPiyRxtdLnL0OSimq-aF/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxHpqvoYrVtk1SAbjALH6VHNX7TtrK5NnLrgzuzWtqDXtS3CwLucuB5nPOFz1bx3Gj5/exec';
     
     let state = {
       teams: [],
@@ -968,6 +1208,13 @@
       todayMatches: [],
       selectorMode: 'match'
     };
+
+    // ===== Utilities =====
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
 
     // ===== JSONP API =====
     let callbackCounter = 0;
@@ -1006,6 +1253,7 @@
         state.teams = await api('getOtherTeams');
         state.ourPlayers = await api('getTeamPlayers');
         state.ourBuilds = await api('getTeamBuilds');
+        state.tournaments = await api('getTournaments');
         
         // 自チーム選手のドロップダウンを初期化
         const activePlayers = state.ourPlayers.filter(p => !p.status || p.status === '現役');
@@ -1016,9 +1264,186 @@
           document.getElementById(`our-player-${i}`).innerHTML = playerOptions;
         }
         
+        // 当日の大会を自動選択
+        autoSelectTodayTournament();
+        
         loadTodayMatches();
       } catch (error) {
         showToast('データの読み込みに失敗しました', 'error');
+      }
+    }
+
+    // 当日の大会を自動選択
+    function autoSelectTodayTournament() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTournament = state.tournaments.find(t => t.date && t.date.startsWith(today));
+      
+      if (todayTournament) {
+        selectTournament(todayTournament);
+        showToast(`本日の大会「${todayTournament.name}」を自動選択しました`);
+      }
+    }
+
+    // ===== 大会選択 =====
+    function openTournamentSelector() {
+      renderTournamentList();
+      openModal('tournament-modal');
+    }
+
+    function renderTournamentList() {
+      const container = document.getElementById('tournament-list');
+      const today = new Date().toISOString().split('T')[0];
+      
+      // エントリー済の大会のみ表示（日付降順）
+      const enteredTournaments = state.tournaments
+        .filter(t => t.entryStatus === 'エントリー済' || t.entryStatus === '検討中')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      if (enteredTournaments.length === 0) {
+        container.innerHTML = '<div class="empty">エントリー済の大会がありません</div>';
+        return;
+      }
+      
+      container.innerHTML = enteredTournaments.map(t => {
+        const isToday = t.date && t.date.startsWith(today);
+        const dateStr = t.date ? formatDate(t.date) : '';
+        const memberCount = t.members ? t.members.split(',').filter(m => m.trim()).length : 0;
+        const memberLabel = memberCount > 0 ? `<span class="tournament-member-count">${memberCount}人</span>` : '';
+        
+        return `
+          <div class="tournament-option ${isToday ? 'today' : ''}" onclick="selectTournament(state.tournaments.find(x => x.id === '${t.id}'))">
+            <div>
+              <span class="tournament-option-name">${t.name}</span>
+              ${isToday ? '<span class="tournament-option-badge">本日</span>' : ''}
+              ${memberLabel}
+            </div>
+            <span class="tournament-option-date">${dateStr}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectTournament(tournament) {
+      state.selectedTournament = tournament;
+      
+      if (tournament) {
+        document.getElementById('selected-tournament').textContent = tournament.name;
+        document.getElementById('tournament-info').style.display = 'flex';
+        document.getElementById('tournament-grade-badge').textContent = tournament.grade || '';
+        document.getElementById('tournament-date-display').textContent = tournament.date ? formatDate(tournament.date) : '';
+        
+        // メンバー選択を表示
+        document.getElementById('member-select-section').style.display = 'block';
+        renderMemberCheckboxes(tournament);
+      } else {
+        document.getElementById('selected-tournament').textContent = '練習試合';
+        document.getElementById('tournament-info').style.display = 'none';
+        document.getElementById('member-select-section').style.display = 'none';
+      }
+      
+      closeModal('tournament-modal');
+    }
+
+    // メンバーチェックボックスを描画
+    function renderMemberCheckboxes(tournament) {
+      const container = document.getElementById('member-checkboxes');
+      const activePlayers = state.ourPlayers.filter(p => !p.status || p.status === '現役');
+      
+      // 既存のメンバー選択を取得（カンマ区切りのID文字列）
+      const existingMembers = tournament.members ? tournament.members.split(',').map(m => m.trim()) : [];
+      
+      container.innerHTML = activePlayers.map(p => {
+        const isChecked = existingMembers.includes(p.id);
+        return `
+          <label class="member-checkbox">
+            <input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="updateTournamentMembers()">
+            <span class="member-checkbox-name">${p.nickname || p.name}</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    // メンバー選択を更新（スプレッドシートに保存）
+    async function updateTournamentMembers() {
+      if (!state.selectedTournament) return;
+      
+      const checkboxes = document.querySelectorAll('#member-checkboxes input:checked');
+      const memberIds = Array.from(checkboxes).map(cb => cb.value);
+      
+      // ローカル状態を更新
+      state.selectedTournament.members = memberIds.join(',');
+      
+      // state.tournamentsも更新
+      const idx = state.tournaments.findIndex(t => t.id === state.selectedTournament.id);
+      if (idx !== -1) {
+        state.tournaments[idx].members = memberIds.join(',');
+      }
+      
+      // スプレッドシートに保存
+      try {
+        await api('updateTournament', {
+          tournament: {
+            id: state.selectedTournament.id,
+            members: memberIds.join(','),
+            membersOnly: true
+          }
+        });
+      } catch (error) {
+        console.error('メンバー保存エラー:', error);
+      }
+    }
+
+    function openNewTournamentForm() {
+      closeModal('tournament-modal');
+      // 今日の日付をデフォルトに
+      document.getElementById('new-tournament-date').value = new Date().toISOString().split('T')[0];
+      setTimeout(() => openModal('new-tournament-modal'), 300);
+    }
+
+    async function saveNewTournament() {
+      const name = document.getElementById('new-tournament-name').value.trim();
+      const date = document.getElementById('new-tournament-date').value;
+      const grade = document.getElementById('new-tournament-grade').value;
+      const entryStatus = document.getElementById('new-tournament-status').value;
+      
+      if (!name) {
+        showToast('大会名を入力してください', 'error');
+        return;
+      }
+      
+      try {
+        const result = await api('addTournament', {
+          tournament: {
+            name: name,
+            date: date,
+            grade: grade,
+            entryStatus: entryStatus
+          }
+        });
+        
+        if (result.success) {
+          const newTournament = {
+            id: result.id,
+            name: name,
+            date: date,
+            grade: grade,
+            entryStatus: entryStatus
+          };
+          state.tournaments.push(newTournament);
+          
+          // 追加した大会を自動選択
+          selectTournament(newTournament);
+          
+          // フォームをリセット
+          document.getElementById('new-tournament-name').value = '';
+          
+          closeModal('new-tournament-modal');
+          showToast('大会を追加しました');
+        } else {
+          showToast(result.error || 'エラーが発生しました', 'error');
+        }
+      } catch (error) {
+        showToast('通信エラーが発生しました', 'error');
       }
     }
 
@@ -1346,13 +1771,17 @@
       }
       
       try {
+        const tournament = state.selectedTournament;
         const result = await api('addMatch', {
           match: {
             date: new Date().toISOString().split('T')[0],
-            opponentTeamId: state.selectedTeam.id,
-            opponentTeamName: state.selectedTeam.name,
-            ourScore: state.scores.ours,
-            opponentScore: state.scores.theirs,
+            tournamentId: tournament ? tournament.id : '',
+            tournamentName: tournament ? tournament.name : '',
+            matchType: 'our',
+            teamBId: state.selectedTeam.id,
+            teamBName: state.selectedTeam.name,
+            teamAScore: state.scores.ours,
+            teamBScore: state.scores.theirs,
             notes: document.getElementById('match-notes').value
           }
         });
@@ -1407,6 +1836,7 @@
           showToast(`記録しました: ${state.scores.ours} - ${state.scores.theirs}`);
           
           state.todayMatches.unshift({
+            tournamentName: tournament ? tournament.name : '',
             opponentTeamName: state.selectedTeam.name,
             ourScore: state.scores.ours,
             opponentScore: state.scores.theirs,
@@ -1462,13 +1892,24 @@
         return;
       }
       
-      container.innerHTML = state.todayMatches.map(m => `
-        <div class="match-item">
-          <span class="match-opponent">${m.opponentTeamName || '-'}</span>
-          <span class="match-score">${m.ourScore} - ${m.opponentScore}</span>
-          <span class="match-result ${m.result === '勝ち' ? 'win' : 'lose'}">${m.result}</span>
-        </div>
-      `).join('');
+      container.innerHTML = state.todayMatches.map(m => {
+        // 新旧両方のデータ形式に対応
+        const opponentName = m.teamBName || m.opponentTeamName || '-';
+        const ourScore = m.teamAScore !== undefined ? m.teamAScore : m.ourScore;
+        const oppScore = m.teamBScore !== undefined ? m.teamBScore : m.opponentScore;
+        const tournamentLabel = m.tournamentName ? `<span class="match-tournament">${m.tournamentName}</span>` : '';
+        
+        return `
+          <div class="match-item">
+            <div class="match-info">
+              ${tournamentLabel}
+              <span class="match-opponent">${opponentName}</span>
+            </div>
+            <span class="match-score">${ourScore} - ${oppScore}</span>
+            <span class="match-result ${m.result === '勝ち' ? 'win' : 'lose'}">${m.result}</span>
+          </div>
+        `;
+      }).join('');
     }
 
     // ===== Modal =====
